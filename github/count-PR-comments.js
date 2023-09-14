@@ -36,7 +36,7 @@ async function getPullRequests(cursor) {
   }
   `;
 
-  const response = await axios.post('https://api.github.com/graphql', { query }, { headers })
+  const response = await axios.post('https://api.github.com/graphql', {query}, {headers})
   const prs = response.data.data.organization.repository.pullRequests;
   return prs;
 }
@@ -44,14 +44,14 @@ async function getPullRequests(cursor) {
 async function main() {
   const commentsCountByPRAuthor = {};
   let allNodes = [];
-  let cursor = "";
+  let cursor = '';
 
   while (true) {
     const {nodes, pageInfo} = await getPullRequests(cursor);
     if (nodes.length > 0) {
       allNodes = allNodes.concat(nodes);
       cursor = pageInfo.endCursor;
-      console.log("PRs count:", allNodes.length);
+      console.log('PRs count:', allNodes.length);
     } else {
       break;
     }
@@ -70,18 +70,18 @@ async function main() {
   Object.keys(commentsCountByPRAuthor).forEach(key => {
     commentsCountByPRAuthors.push({name: key, comments: commentsCountByPRAuthor[key]});
   });
-  console.log("commentsCountByPRAuthors:", commentsCountByPRAuthors);
+  console.log('commentsCountByPRAuthors:', commentsCountByPRAuthors);
 
   // Define the CSV file's header
   const csvWriter = createCsvWriter({
     path: `${username}_${repository}_PR_comments.csv`,
     header: [
-      { id: 'name', title: 'Name' },
-      { id: 'comments', title: 'PR Comments' }
+      {id: 'name', title: 'Name'},
+      {id: 'comments', title: 'PR Comments'}
     ],
   });
 
-// Write the data to the CSV file
+  // Write the data to the CSV file
   csvWriter
     .writeRecords(commentsCountByPRAuthors)
     .then(() => {
@@ -90,7 +90,6 @@ async function main() {
     .catch((error) => {
       console.error('Error:', error);
     });
-
 }
 
 main();
