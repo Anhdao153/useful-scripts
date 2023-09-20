@@ -1,3 +1,7 @@
+/**
+ * Notes
+ * Dry-run: https://docs.github.com/en/graphql/overview/explorer
+ */
 require('dotenv').config();
 const axios = require('axios');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
@@ -24,8 +28,21 @@ async function getPullRequests(cursor) {
             startCursor
           }
           nodes {
+            permalink
             author {
               login
+            }
+            reviews(first: 100, after: null) {
+              nodes {
+                comments(first: 20, after: null) {
+                  nodes {
+                    author {
+                      login
+                    }
+                  }
+                }
+              }
+              totalCount
             }
             totalCommentsCount
           }
@@ -59,10 +76,16 @@ async function main() {
 
   // Calculate the total comments count
   allNodes.forEach((node) => {
+    const commentAuthors = node.reviews.nodes
+      .map(node => node.comments.nodes)
+      .flat()
+      .map(commentNode => commentNode.author.login);
+    const totalCommentsNotByAuthorCount = commentAuthors.filter(authorLogin => authorLogin != node.author.login).length;
+
     if (commentsCountByPRAuthor[node.author.login]) {
-      commentsCountByPRAuthor[node.author.login] += node.totalCommentsCount;
+      commentsCountByPRAuthor[node.author.login] += totalCommentsNotByAuthorCount;
     } else {
-      commentsCountByPRAuthor[node.author.login] = node.totalCommentsCount;
+      commentsCountByPRAuthor[node.author.login] = totalCommentsNotByAuthorCount;
     }
   });
 
