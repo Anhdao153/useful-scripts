@@ -1,0 +1,42 @@
+name: Upload CSV to Google Drive
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+
+    - name: Install dependencies and run JS script
+      env:
+        GITHUB_ACCESS_TOKEN: ${{env.ACCESS_TOKEN}}
+        GITHUB_USERNAME: ${{env.USERNAME}}
+      run: |
+        cd github
+        npm install
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: '1.22'
+
+    - name: Build and Run Go
+      env:
+        GDRIVE_CREDENTIALS_JSON: ${{ secrets.GDRIVE_CREDENTIALS_JSON }}
+        TOKEN_CREDENTIALS: ${{secrets.TOKEN_CREDENTIALS}}
+      run: |
+        cd upload
+        go build -o upload
+        go run main.go
+

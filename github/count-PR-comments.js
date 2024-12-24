@@ -5,11 +5,12 @@
 require('dotenv').config();
 const axios = require('axios');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
-
+const mkdir = require('fs').mkdir;
 // Replace with your GitHub Personal Access Token and GitHub username
-const accessToken = process.env.GITHUB_ACCESS_TOKEN;
-const username = process.env.GITHUB_USERNAME;
-const repository = process.env.REPOSITORY;
+const accessToken = process.env.ACCESS_TOKEN;
+const username = process.env.USERNAME;
+const repository = process.argv[2];
+console.log(repository);
 const limit = 100; // max limit is 100
 
 const headers = {
@@ -96,8 +97,20 @@ async function main() {
   console.log('commentsCountByPRAuthors:', commentsCountByPRAuthors);
 
   // Define the CSV file's header
+  // const name = new Date();
+  // const folderName = `${name.getDate().toString()+ '-' + name.getMonth().toString()+ '-' + name.getFullYear().toString()}`;
+  const folderName = process.argv[3];
+  console.log(folderName, 'folderName');
+  // console.log(folderName, '__dirname');
+  mkdir(`${__dirname}/${folderName}`, { recursive: true }, (err) => {
+    if (err) {
+        console.error('Error creating folder:', err);
+    } else {
+        console.log('Folder created successfully.');
+    }
+});
   const csvWriter = createCsvWriter({
-    path: `${username}_${repository}_PR_comments.csv`,
+    path: `${__dirname}/${folderName}/${username}_${repository}_PR_comments.csv`,
     header: [
       {id: 'name', title: 'Name'},
       {id: 'comments', title: 'PR Comments'}
